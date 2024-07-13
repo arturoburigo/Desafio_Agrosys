@@ -1,0 +1,47 @@
+{
+  "clients": [
+    {
+      "name": "Goku",
+      "cpf": "123456789",
+      "dob": "2003-02-14",
+      "phone": "48911188686",
+      "cell": "48911188683"
+    },
+    {
+      "name": "Arturo",
+      "cpf": "07309275985",
+      "dob": "1990-09-20",
+      "phone": "489111858583",
+      "cell": "489111858582"
+    }
+  ],
+  "addresses": [
+    {
+      "cpf": "123456789",
+      "cep": "88813150",
+      "street": "Avenida Centenario",
+      "neighborhood": "Centro",
+      "city": "Criciuma",
+      "state": "SC",
+      "country": "Brasil"
+    },
+    {
+      "cpf": "123456789",
+      "cep": "888150270",
+      "street": "Rua naçoes",
+      "neighborhood": "Prospera",
+      "city": "Criciuma",
+      "state": "SC",
+      "country": "Brasil"
+    },
+    {
+      "cpf": "07309275985",
+      "cep": "88812302",
+      "street": "Teste",
+      "neighborhood": "Central Park",
+      "city": "New York",
+      "state": "NY",
+      "country": "EUA"
+    }
+  ]
+}

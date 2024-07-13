@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CRUD Web Application</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css">
+    <script src="//cdn.jsdelivr.net/alasql/0.2/alasql.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container mt-5">
+        <div id="login" class="card">
+            <div class="card-body">
+                <h2 class="card-title">Login</h2>
+                <div class="form-group">
+                    <input type="text" id="username" class="form-control" placeholder="Usuário" style="max-width: 300px;">
+                </div>
+                <div class="form-group">
+                    <input type="password" id="password" class="form-control" placeholder="Senha" style="max-width: 300px;">
+                </div>
+                <button onclick="login()" class="btn btn-primary">Login</button>
+                <button onclick="showRegister()" class="btn btn-secondary">Registrar</button>
+                <button onclick="showConfig()" class="btn btn-secondary">Configurações</button>
+            </div>
+        </div>
+        
+        <div id="register" class="card" style="display:none;">
+            <div class="card-body">
+                <h2 class="card-title">Registrar</h2>
+                <div class="form-group">
+                    <input type="text" id="newUsername" class="form-control" placeholder="Novo Usuário" style="max-width: 300px;" >
+                </div>
+                <div class="form-group">
+                    <input type="password" id="newPassword" class="form-control" placeholder="Nova Senha" style="max-width: 300px;">
+                </div>
+                <button onclick="register()" class="btn btn-primary">Registrar</button>
+                <button onclick="showLogin()" class="btn btn-secondary">Voltar</button>
+            </div>
+        </div>
+
+        <div id="config" class="card" style="display:none;">
+            <div class="card-body">
+                <h2 class="card-title">Configurações</h2>
+                <div class="form-group">
+                    <input type="file" id="dbUpload" class="form-control-file">
+                </div>
+                <button onclick="uploadDB()" class="btn btn-primary">Upload</button>
+                <button onclick="showLogin()" class="btn btn-secondary">Voltar</button>
+            </div>
+        </div>
+        
+   
+        <div id="client" class="card" style="display:none;">
+            <div class="card-body">
+                <h2 class="card-title">Cadastro de Clientes</h2>
+                <div class="form-group">
+                    <input type="text" id="clientName" class="form-control" placeholder="Nome Completo">
+                </div>
+                <div class="form-group">
+                    <input type="text" id="clientCPF" class="form-control" placeholder="CPF">
+                </div>
+                <div class="form-group">
+                    <input type="date" id="clientDOB" class="form-control" placeholder="Data de Nascimento">
+                </div>
+                <div class="form-group">
+                    <input type="text" id="clientPhone" class="form-control" placeholder="Telefone">
+                </div>
+                <div class="form-group">
+                    <input type="text" id="clientCell" class="form-control" placeholder="Celular">
+                </div>
+                <button onclick="addClient()" class="btn btn-primary">Adicionar Cliente</button>
+                <button onclick="exportDB()" class="btn btn-secondary">Exportar DB</button>
+                <button onclick="logout()" class="btn btn-danger">Sair</button> <!-- Botão Sair -->
+                <ul id="clientList" class="list-group mt-3"></ul>
+            </div>
+        </div>
+
+        <div class="modal fade" id="addressModal" tabindex="-1" role="dialog" aria-labelledby="addressModalLabel" aria-hidden="true">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="addressModalLabel">Gerenciar Endereços</h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="form-group">
+                            <input type="text" id="addressCep" class="form-control" placeholder="CEP">
+                        </div>
+                        <div class="form-group">
+                            <input type="text" id="addressStreet" class="form-control" placeholder="Rua">
+                        </div>
+                        <div class="form-group">
+                            <input type="text" id="addressNeighborhood" class="form-control" placeholder="Bairro">
+                        </div>
+                        <div class="form-group">
+                            <input type="text" id="addressCity" class="form-control" placeholder="Cidade">
+                        </div>
+                        <div class="form-group">
+                            <input type="text" id="addressState" class="form-control" placeholder="Estado">
+                        </div>
+                        <div class="form-group">
+                            <input type="text" id="addressCountry" class="form-control" placeholder="País">
+                        </div>
+                        <button onclick="addAddress()" class="btn btn-primary">Adicionar Endereço</button>
+                        <ul id="addressList" class="list-group mt-3"></ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"></script>
+    <script>
+        // Inicialização do banco de dados
+        alasql('CREATE localStorage DATABASE IF NOT EXISTS agrosys');
+        alasql('ATTACH localStorage DATABASE agrosys');
+        alasql('CREATE TABLE IF NOT EXISTS agrosys.users (username STRING, password STRING)');
+        alasql('CREATE TABLE IF NOT EXISTS agrosys.clients (name STRING, cpf STRING UNIQUE, dob DATE, phone STRING, cell STRING)');
+        alasql('CREATE TABLE IF NOT EXISTS agrosys.addresses (cpf STRING, cep STRING, street STRING, neighborhood STRING, city STRING, state STRING, country STRING)');
+
+
+        // Função de login
+        function login() {
+            const username = $('#username').val();
+            const password = $('#password').val();
+            const user = alasql('SELECT * FROM agrosys.users WHERE username = ? AND password = ?', [username, password]);
+            if (user.length > 0) {
+                alert('Login bem-sucedido');
+                showClient();
+            } else {
+                alert('Usuário ou senha incorretos');
+            }
+        }
+
+        // Função de registro
+        function register() {
+            const newUsername = $('#newUsername').val();
+            const newPassword = $('#newPassword').val();
+            alasql('INSERT INTO agrosys.users VALUES (?, ?)', [newUsername, newPassword]);
+            alert('Usuário registrado com sucesso');
+            showLogin();
+        }
+
+        // Função de adicionar cliente
+        function addClient() {
+            const name = $('#clientName').val();
+            const cpf = $('#clientCPF').val();
+            const dob = $('#clientDOB').val();
+            const phone = $('#clientPhone').val();
+            const cell = $('#clientCell').val();
+
+            if (!name || !cpf || !dob || !phone || !cell) {
+                alert('Por favor, preencha todos os campos.');
+                return;
+            }
+
+            const existingClient = alasql('SELECT * FROM agrosys.clients WHERE cpf = ?', [cpf]);
+            if (existingClient.length > 0) {
+                alert('CPF já cadastrado. Por favor, digite outro CPF.');
+                return;
+            }
+
+            alasql('INSERT INTO agrosys.clients VALUES (?, ?, ?, ?, ?)', [name, cpf, dob, phone, cell]);
+            alert('Cliente adicionado com sucesso');
+            listClients();
+
+            $('#clientName').val('');
+            $('#clientCPF').val('');
+            $('#clientDOB').val('');
+            $('#clientPhone').val('');
+            $('#clientCell').val('');
+        }
+
+        // Função de listar clientes
+        function listClients() {
+            const clients = alasql('SELECT * FROM agrosys.clients');
+            const clientList = $('#clientList');
+            clientList.empty();
+            clients.forEach(client => {
+                const li = $('<li></li>').addClass('list-group-item d-flex justify-content-between align-items-center');
+                const clientInfo = `Nome: ${client.name} | CPF: ${client.cpf} | Nascimento: ${client.dob} | Tel: ${client.phone} | Cel: ${client.cell}`;
+                const manageButton = $('<button></button>')
+                    .text('Gerenciar Endereços')
+                    .addClass('btn btn-secondary')
+                    .attr('onclick', `showAddressModal('${client.cpf}')`);
+                li.append(clientInfo, manageButton);
+                clientList.append(li);
+            });
+        }
+
+        // Função para mostrar o modal de endereços
+        function showAddressModal(cpf) {
+            $('#addressModal').data('cpf', cpf);
+            $('#addressModal').modal('show');
+            listAddresses(cpf);
+        }
+
+        // Função para listar endereços
+        function listAddresses(cpf) {
+            const addresses = alasql('SELECT * FROM agrosys.addresses WHERE cpf = ?', [cpf]);
+            const addressList = $('#addressList');
+            addressList.empty();
+            addresses.forEach(address => {
+                const li = $('<li></li>').addClass('list-group-item');
+                const addressInfo = `CEP: ${address.cep} | Rua: ${address.street} | Bairro: ${address.neighborhood} | Cidade: ${address.city} | Estado: ${address.state}: | País: ${address.country} `;
+                li.text(addressInfo);
+                addressList.append(li);
+            });
+        }
+
+        // Função para adicionar endereço
+        function addAddress() {
+            const cpf = $('#addressModal').data('cpf');
+        const cep = $('#addressCep').val();
+        const street = $('#addressStreet').val();
+        const neighborhood = $('#addressNeighborhood').val();
+        const city = $('#addressCity').val();
+        const state = $('#addressState').val();
+        const country = $('#addressCountry').val();
+
+        if (!cep || !street || !neighborhood || !city || !state || !country) {
+            alert('Por favor, preencha todos os campos.');
+            return;
+        }
+
+        alasql('INSERT INTO agrosys.addresses VALUES (?, ?, ?, ?, ?, ?, ?, ?)', [cpf, cep, street, neighborhood, city, state, country]);
+        alert('Endereço adicionado com sucesso');
+        listAddresses(cpf);
+
+        $('#addressCep').val('');
+        $('#addressStreet').val('');
+        $('#addressNeighborhood').val('');
+        $('#addressCity').val('');
+        $('#addressState').val('');
+        $('#addressCountry').val('');
+        }
+
+        function logout() {
+            location.reload();
+        }
+
+        // Função de exportar banco de dados
+        function exportDB() {
+            const clients = alasql('SELECT * FROM agrosys.clients');
+            const addresses = alasql('SELECT * FROM agrosys.addresses');
+            const data = {
+                clients: clients,
+                addresses: addresses
+            };
+            const json = JSON.stringify(data, null, 2); // Indentação de 2 espaços para legibilidade
+            const blob = new Blob([json], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = $('<a></a>').attr('href', url).attr('download', 'database.json');
+            $('body').append(a);
+            a[0].click();
+            a.remove();
+        }
+
+        // Função de upload de banco de dados
+        function uploadDB() {
+        const file = $('#dbUpload')[0].files[0];
+        const reader = new FileReader();
+        
+        reader.onload = function (e) {
+            try {
+                const data = JSON.parse(e.target.result);
+                
+                alasql('DELETE FROM agrosys.clients');
+                alasql('DELETE FROM agrosys.addresses');
+
+                if (Array.isArray(data.clients)) {
+                    data.clients.forEach(client => {
+                        alasql('INSERT INTO agrosys.clients VALUES (?, ?, ?, ?, ?)', [client.name, client.cpf, client.dob, client.phone, client.cell]);
+                    });
+                }
+                
+                if (Array.isArray(data.addresses)) {
+                    data.addresses.forEach(address => {
+                        alasql('INSERT INTO agrosys.addresses VALUES (?, ?, ?, ?, ?, ?, ?)', [address.cpf, address.cep, address.street, address.neighborhood, address.city, address.state, address.country]);
+                    });
+                }
+                
+                alert('Banco de dados importado com sucesso');
+                showClient();
+            } catch (err) {
+                alert('Erro ao importar banco de dados: ' + err.message);
+            }
+        };
+        
+        reader.readAsText(file);
+    }
+
+        function showLogin() {
+            $('#login').show();
+            $('#register').hide();
+            $('#config').hide();
+            $('#client').hide();
+        }
+
+        function showRegister() {
+            $('#login').hide();
+            $('#register').show();
+            $('#config').hide();
+            $('#client').hide();
+        }
+
+        function showConfig() {
+            $('#login').hide();
+            $('#register').hide();
+            $('#config').show();
+            $('#client').hide();
+        }
+
+        function showClient() {
+            $('#login').hide();
+            $('#register').hide();
+            $('#config').hide();
+            $('#client').show();
+            listClients();
+        }
+
+        $(document).ready(showLogin);
+    </script>
+</body>
+</html>

@@ -1,0 +1,7 @@
+OBS: É importante antes de qualquer passo realizar a limpeza do local storage do navegador
+
+
+1- Executar o index.html
+2- O front-end esta bastante auto explicativo, um detalhe é que a vinculação de endereço só irá aparecer apos criar um cliente
+3- Caso queira carregar um banco pré feito, utilizar o json desta pasta.
+4- Link do projeto com um READ.ME das telas estara disponivel no meu github https://github.com/arturoburigo?tab=repositories
